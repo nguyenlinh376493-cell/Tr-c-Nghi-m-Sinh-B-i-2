@@ -3,431 +3,911 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Kiểm Tra Chuẩn 150 Câu - Sinh Học 11</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Hệ Thống Quản Lý Lớp Học & Bảng Tin Thông Minh</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        .desk-card { transition: all 0.2s ease; }
+        .desk-card:hover { transform: translateY(-2px); }
+        @keyframes pulseAlert {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .alert-vibrate { animation: pulseAlert 0.4s ease infinite; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+<body id="appBody" class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-indigo-700 text-white shadow-md py-4 px-6 flex justify-between items-center">
-        <div>
-            <h1 class="text-lg font-bold tracking-wide">Trắc Nghiệm Sinh Học 11 - Bài 2 (Bản Hoàn Chỉnh)</h1>
-            <p class="text-xs text-indigo-200">Trao đổi nước và khoáng ở thực vật</p>
+    <!-- HEADER & NAVBAR -->
+    <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-amber-500 text-indigo-950 p-2.5 rounded-xl font-black text-xl shadow">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base md:text-xl tracking-wide leading-tight">BẢNG TIN & SƠ ĐỒ LỚP HỌC</h1>
+                    <p class="text-xs text-indigo-200">Đồng bộ hóa dữ liệu thời gian thực cho toàn lớp</p>
+                </div>
+            </div>
+
+            <!-- Khu vực phân quyền đăng nhập -->
+            <div class="flex items-center gap-2 md:gap-3">
+                <span id="roleBadge" class="bg-slate-700/80 text-slate-200 text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5 border border-slate-600">
+                    <i class="fa-solid fa-user-graduate text-amber-400"></i> Học sinh (Chỉ xem)
+                </span>
+                <button onclick="openLoginModal()" class="bg-amber-500 hover:bg-amber-400 text-indigo-950 font-bold text-xs md:text-sm px-3.5 py-2 rounded-lg transition flex items-center gap-2 shadow">
+                    <i class="fa-solid fa-key" id="authIcon"></i>
+                    <span id="authBtnText">Đăng Nhập</span>
+                </button>
+            </div>
         </div>
-        <button id="btnHome" onclick="showDashboard()" class="hidden bg-indigo-800 hover:bg-indigo-900 px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer">
-            Quay lại danh sách đề
-        </button>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-4xl w-full mx-auto p-4 sm:p-6 my-auto flex-grow">
-        
-        <!-- DASHBOARD VIEW -->
-        <div id="dashboardView" class="space-y-6">
-            <div class="text-center space-y-2">
-                <h2 class="text-3xl font-extrabold text-slate-900">3 Bộ Đề Thi (Mỗi Đề Đúng 50 Câu)</h2>
-                <p class="text-slate-600 max-w-xl mx-auto">Cam kết đủ 50 câu cho mỗi đề, các câu hỏi hoàn toàn khác nhau, bám sát 100% nội dung tài liệu.</p>
-            </div>
+    <!-- BANNER CẢNH BÁO RUNG (TỰ ẨN SAU 2 GIÂY) -->
+    <div id="alertBanner" class="bg-rose-600 text-white text-center py-2 px-4 text-xs font-bold hidden flex items-center justify-center gap-2 shadow-inner">
+        <i class="fa-solid fa-bell fa-shake text-amber-300"></i> ⚠️ CẢNH BÁO: CÓ THÔNG BÁO HOẶC CẬP NHẬT MỚI TRONG LỚP HỌC!
+    </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <!-- Đề 1 -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">Đề Số 01</span>
-                        <h3 class="text-lg font-bold text-slate-900 mt-4">Vai Trò & Hấp Thụ Tại Rễ</h3>
-                        <p class="text-sm text-slate-500 mt-2">Đúng 50 câu hỏi về vai trò nước, khoáng đa/vi lượng, triệu chứng thiếu khoáng, lông hút, thẩm thấu và vận chuyển vào rễ.</p>
-                    </div>
-                    <div class="mt-6">
-                        <div class="text-xs text-slate-400 mb-2" id="scoreInfo0">Chưa làm bài</div>
-                        <button onclick="startQuiz(0)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-xl transition cursor-pointer">
-                            Vào Làm Đề 1 (50 Câu)
-                        </button>
-                    </div>
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- CỘT TRÁI (8 COT): BẢNG TIN, SƠ ĐỒ LỚP & SỔ KỶ LUẬT -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- THÔNG BÁO QUAN TRỌNG -->
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-bullhorn text-indigo-600"></i> Thông Báo Lớp Học
+                    </h2>
+                    <button id="addNoticeBtn" onclick="openNoticeModal()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Đăng Thông Báo
+                    </button>
                 </div>
 
-                <!-- Đề 2 -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition flex flex-col justify-between">
+                <div id="noticeContainer" class="space-y-4">
+                    <!-- Javascript Render -->
+                </div>
+            </section>
+
+            <!-- SƠ ĐỒ LỚP HỌC (3 TỔ x 6 BÀN DỌC x 3 VỊ TRÍ) -->
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
                     <div>
-                        <span class="text-xs font-semibold uppercase tracking-wider text-cyan-600 bg-cyan-50 px-3 py-1 rounded-full">Đề Số 02</span>
-                        <h3 class="text-lg font-bold text-slate-900 mt-4">Mạch Gỗ, Mạch Rây & Thoát Hơi Nước</h3>
-                        <p class="text-sm text-slate-500 mt-2">Đúng 50 câu hỏi chuyên sâu về cấu tạo mạch gỗ, mạch rây, áp suất rễ, lực kéo thoát hơi nước và cơ chế đóng mở khí khổng.</p>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-sitemap text-emerald-600"></i> Sơ Đồ Chỗ Ngồi Lớp Học
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">3 Tổ, mỗi tổ 6 bàn dọc, 3 vị trí/bàn (18 bàn tổng cộng)</p>
                     </div>
-                    <div class="mt-6">
-                        <div class="text-xs text-slate-400 mb-2" id="scoreInfo1">Chưa làm bài</div>
-                        <button onclick="startQuiz(1)" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2.5 rounded-xl transition cursor-pointer">
-                            Vào Làm Đề 2 (50 Câu)
-                        </button>
-                    </div>
+                    <span class="text-xs font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-200">
+                        Bàn Giáo Viên Phía Trên
+                    </span>
                 </div>
 
-                <!-- Đề 3 -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition flex flex-col justify-between">
-                    <div>
-                        <span class="text-xs font-semibold uppercase tracking-wider text-rose-600 bg-rose-50 px-3 py-1 rounded-full">Đề Số 03</span>
-                        <h3 class="text-lg font-bold text-slate-900 mt-4">Dinh Dưỡng Nitrogen & Thực Tiễn</h3>
-                        <p class="text-sm text-slate-500 mt-2">Đúng 50 câu hỏi về quá trình khử nitrate, đồng hoá ammonium, ảnh hưởng nhiệt độ/độ ẩm, tưới tiêu, bón phân 4 đúng và nấm rễ.</p>
+                <div class="w-full bg-slate-800 text-white text-center py-2 rounded-xl mb-6 font-bold text-xs tracking-wider shadow-inner uppercase">
+                    👨‍🏫 Bục Giảng & Bàn Giáo Viên 👩‍🏫
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- TỔ 1 -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col gap-3">
+                        <div class="font-bold text-xs text-indigo-900 bg-indigo-100 px-2.5 py-1 rounded text-center border border-indigo-200">
+                            TỔ 1 (Bàn 1 - 6)
+                        </div>
+                        <div id="group1Container" class="flex flex-col gap-2.5"></div>
                     </div>
-                    <div class="mt-6">
-                        <div class="text-xs text-slate-400 mb-2" id="scoreInfo2">Chưa làm bài</div>
-                        <button onclick="startQuiz(2)" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-2.5 rounded-xl transition cursor-pointer">
-                            Vào Làm Đề 3 (50 Câu)
-                        </button>
+
+                    <!-- TỔ 2 -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col gap-3">
+                        <div class="font-bold text-xs text-indigo-900 bg-indigo-100 px-2.5 py-1 rounded text-center border border-indigo-200">
+                            TỔ 2 (Bàn 7 - 12)
+                        </div>
+                        <div id="group2Container" class="flex flex-col gap-2.5"></div>
+                    </div>
+
+                    <!-- TỔ 3 -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col gap-3">
+                        <div class="font-bold text-xs text-indigo-900 bg-indigo-100 px-2.5 py-1 rounded text-center border border-indigo-200">
+                            TỔ 3 (Bàn 13 - 18)
+                        </div>
+                        <div id="group3Container" class="flex flex-col gap-2.5"></div>
                     </div>
                 </div>
-            </div>
+            </section>
+
+            <!-- SỔ GHI LỖI KỶ LUẬT & THỐNG KÊ -->
+            <section id="violationSection" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 hidden">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-list text-rose-600"></i> Sổ Ghi Lỗi Nề Nếp & Thống Kê
+                    </h2>
+                    <button onclick="openDisciplineModal()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Ghi Lỗi Mới
+                    </button>
+                </div>
+
+                <div id="violationStatsCard" class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 mb-4 flex items-center justify-between text-xs">
+                    <!-- JS Render Stats -->
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-slate-50 text-slate-700 font-semibold text-xs uppercase border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Học Sinh</th>
+                                <th class="p-3">Nội Dung Vi Phạm</th>
+                                <th class="p-3">Thời Gian</th>
+                                <th class="p-3 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="violationTable" class="divide-y divide-slate-100">
+                            <!-- JS Render -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
         </div>
 
-        <!-- QUIZ VIEW -->
-        <div id="quizView" class="hidden space-y-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
-                <div>
-                    <h3 id="quizTitleDisplay" class="font-bold text-slate-900 text-lg">Tên Đề Thi</h3>
-                    <p class="text-xs text-slate-500" id="progressText">Câu 1 / 50</p>
+        <!-- CỘT PHẢI (4 COT): TRỢ LÝ AI GIỚI HẠN ĐÚNG 3 VIỆC -->
+        <div class="lg:col-span-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[680px] sticky top-20">
+                
+                <div class="bg-gradient-to-r from-indigo-800 to-indigo-900 text-white p-4 rounded-t-2xl flex items-center justify-between shadow">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-amber-400 text-indigo-950 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm">Trợ Lý AI Lớp Học</h3>
+                            <p class="text-[11px] text-indigo-200">Chỉ trả lời đúng 3 việc chính</p>
+                        </div>
+                    </div>
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 </div>
-                <div class="w-1/3 bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                    <div id="progressBar" class="bg-indigo-600 h-2.5 transition-all duration-300" style="width: 2%;"></div>
+
+                <div id="aiChatBox" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/50 text-sm">
+                    <div class="bg-indigo-100/70 text-indigo-950 p-3 rounded-2xl rounded-tl-none border border-indigo-200/50">
+                        👋 Xin chào! Tôi là Trợ lý AI giới hạn của lớp. Tôi chỉ trả lời 3 câu hỏi:<br>
+                        1️⃣ <i>"Khi nào đóng quỹ?"</i><br>
+                        2️⃣ <i>"Ai vi phạm nhiều nhất?"</i><br>
+                        3️⃣ <i>"Sơ đồ lớp như thế nào?"</i>
+                    </div>
                 </div>
-            </div>
 
-            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-                <h4 id="questionText" class="text-lg font-semibold text-slate-900 leading-relaxed"></h4>
-                <div id="optionsContainer" class="space-y-3"></div>
-            </div>
+                <div class="p-2 bg-slate-100 border-t border-slate-200 flex gap-1 overflow-x-auto text-[11px] font-medium text-slate-600">
+                    <button onclick="quickAsk('Khi nào đóng quỹ?')" class="px-2.5 py-1 bg-white hover:bg-slate-200 rounded-md whitespace-nowrap border border-slate-200 shadow-sm">
+                        📌 Khi nào đóng quỹ?
+                    </button>
+                    <button onclick="quickAsk('Ai vi phạm nhiều nhất?')" class="px-2.5 py-1 bg-white hover:bg-slate-200 rounded-md whitespace-nowrap border border-slate-200 shadow-sm">
+                        ⚠️ Ai vi phạm nhiều nhất?
+                    </button>
+                    <button onclick="quickAsk('Sơ đồ lớp như thế nào?')" class="px-2.5 py-1 bg-white hover:bg-slate-200 rounded-md whitespace-nowrap border border-slate-200 shadow-sm">
+                        🪑 Sơ đồ lớp?
+                    </button>
+                </div>
 
-            <div class="flex justify-between items-center">
-                <button id="btnPrev" onclick="prevQuestion()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium px-5 py-2.5 rounded-xl transition cursor-pointer">
-                    Quay lại
-                </button>
-                <button id="btnNext" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-xl transition cursor-pointer">
-                    Câu tiếp theo
-                </button>
-            </div>
-        </div>
+                <div class="p-3 border-t border-slate-200 bg-white rounded-b-2xl flex gap-2">
+                    <input type="text" id="aiInput" placeholder="Nhập câu hỏi..." onkeypress="if(event.key==='Enter') sendAiMessage()" class="flex-1 bg-slate-100 text-slate-800 text-sm px-3.5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-slate-200">
+                    <button onclick="sendAiMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center justify-center">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
 
-        <!-- RESULT VIEW -->
-        <div id="resultView" class="hidden bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center space-y-6 max-w-xl mx-auto">
-            <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-3xl font-bold" id="scoreCircle">
-                0/50
-            </div>
-            <div>
-                <h3 class="text-2xl font-extrabold text-slate-900">Hoàn Thành Bài Kiểm Tra!</h3>
-                <p class="text-slate-600 mt-2" id="resultMessage">Kết quả kiểm tra.</p>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <button onclick="restartQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-xl transition cursor-pointer">
-                    Làm Lại Đề Này
-                </button>
-                <button onclick="showDashboard()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-6 py-3 rounded-xl transition cursor-pointer">
-                    Chọn Đề Khác
-                </button>
             </div>
         </div>
 
     </main>
 
-    <!-- Footer theo đúng yêu cầu -->
-    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-200 bg-white flex justify-between px-6">
-        <span>Hệ thống đánh giá năng lực Sinh học 11</span>
-        <span class="font-semibold text-indigo-700">Gia Bảo 11A5 biên soạn</span>
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 text-center text-xs py-4 border-t border-slate-800">
+        <p>© 2026 Hệ Thống Quản Lý Lớp Học & Bảng Tin Thông Minh - Đồng bộ thời gian thực</p>
     </footer>
 
-    <script>
-        // --- ĐỀ 1: ĐÚNG 50 CÂU HOÀN CHỈNH VỀ VAI TRÒ & HẤP THỤ NƯỚC, KHOÁNG Ở RỄ ---
-        const quiz1 = [
-            {q: "Nước chiếm khoảng bao nhiêu phần trăm khối lượng tươi của cơ thể thực vật?", opts: ["A. 30% - 50%", "B. 50% - 60%", "C. 70% - 90%", "D. 95% - 99%"], correct: 2},
-            {q: "Đâu là thành phần cấu tạo tế bào và dung môi hoà tan các chất trong cây?", opts: ["A. Nước", "B. Protein dự trữ", "C. Lipid", "D. Tinh bột"], correct: 0},
-            {q: "Trong thành phần thực vật có hơn 50 nguyên tố, nhưng có khoảng bao nhiêu nguyên tố khoáng thiết yếu?", opts: ["A. 10 nguyên tố", "B. 17 nguyên tố", "C. 25 nguyên tố", "D. 30 nguyên tố"], correct: 1},
-            {q: "Nguyên tố khoáng thiết yếu được chia thành hai nhóm chính gồm:", opts: ["A. Hữu cơ và vô cơ", "B. Đa lượng và vi lượng", "C. Kim loại và phi kim", "D. Di động và cố định"], correct: 1},
-            {q: "Nhóm nguyên tố nào sau đây gồm các nguyên tố đa lượng?", opts: ["A. Ca, Mg, N, P, K, S", "B. Fe, Zn, Cl, Mo", "C. Cu, B, Mn", "D. Fe, Cu, Zn"], correct: 0},
-            {q: "Nhóm nguyên tố nào sau đây gồm các nguyên tố vi lượng?", opts: ["A. Nitrogen, Phosphorus", "B. Potassium, Calcium", "C. Chlorine, Iron, Manganese, Molybdenum, Zinc", "D. Magnesium, Sulfur"], correct: 2},
-            {q: "Dạng hấp thụ chủ yếu của Nitrogen (N) trong đất đối với cây là:", opts: ["A. N2 tự do", "B. NH4+ và NO3-", "C. Protein phức tạp", "D. Khí NH3"], correct: 1},
-            {q: "Nguyên tố khoáng nào là thành phần cấu trúc của phân tử diệp lục?", opts: ["A. Calcium (Ca)", "B. Magnesium (Mg)", "C. Potassium (K)", "D. Phosphorus (P)"], correct: 1},
-            {q: "Nguyên tố nào đóng vai trò thành phần của ATP và phospholipid?", opts: ["A. Phosphorus (P)", "B. Potassium (K)", "C. Sulfur (S)", "D. Iron (Fe)"], correct: 0},
-            {q: "Nguyên tố Potassium (K) trong cây có vai trò chủ yếu nào sau đây?", opts: ["A. Cấu tạo thành tế bào", "B. Điều tiết áp suất thẩm thấu, thúc đẩy vận chuyển sản phẩm quang hợp", "C. Cấu tạo trực tiếp diệp lục", "D. Cố định đạm khí quyển"], correct: 1},
-            {q: "Thành phần của enzyme nitrogenase tham gia cố định đạm có sự góp mặt của nguyên tố vi lượng nào?", opts: ["A. Molybdenum (Mo)", "B. Chlorine (Cl)", "C. Calcium (Ca)", "D. Potassium (K)"], correct: 0},
-            {q: "Nguyên tố Chlorine (Cl) tham gia vào quá trình nào trong quang hợp?", opts: ["A. Tổng hợp protein", "B. Quang phân li nước và cân bằng nước", "C. Hoạt hoá enzyme hô hấp", "D. Cấu tạo màng sinh chất"], correct: 1},
-            {q: "Hậu quả của việc thừa hoặc thiếu nguyên tố khoáng được biểu hiện rõ nhất qua đâu?", opts: ["A. Hình thái và màu sắc của lá, thân, quả", "B. Kích thước của rễ cái", "C. Khả năng ra hoa vào ban đêm", "D. Tốc độ sinh trưởng của thân mầm"], correct: 0},
-            {q: "Trao đổi nước ở cơ thể thực vật diễn ra qua mấy giai đoạn?", opts: ["A. 2 giai đoạn", "B. 3 giai đoạn", "C. 4 giai đoạn", "D. 5 giai đoạn"], correct: 1},
-            {q: "Ba giai đoạn liên tiếp của quá trình trao đổi nước trong cây là:", opts: ["A. Hấp thụ ở rễ -> Vận chuyển ở thân -> Thoát hơi nước ở lá", "B. Hút nước -> Quang hợp -> Hô hấp", "C. Thoát hơi nước -> Hấp thụ -> Vận chuyển", "D. Hấp thụ khoáng -> Đồng hoá -> Tiêu hoá"], correct: 0},
-            {q: "Cơ quan chuyên hoá chủ yếu làm nhiệm vụ hấp thụ nước và khoáng ở thực vật trên cạn là:", opts: ["A. Lá cây", "B. Thân cành", "C. Rễ (đặc biệt là miền lông hút)", "D. Hoa và quả"], correct: 2},
-            {q: "Hệ rễ phát triển tạo ra đặc điểm gì giúp tăng hiệu quả hấp thụ?", opts: ["A. Bề mặt tiếp xúc lớn với đất", "B. Lớp vỏ cutin dày đặc", "C. Khả năng quang hợp mạnh", "D. Chứa nhiều khí khổng"], correct: 0},
-            {q: "Các miền chính của rễ cây từ dưới lên gồm:", opts: ["A. Miền hút -> Miền sinh trưởng -> Miền chóp rễ", "B. Miền chóp rễ -> Miền sinh trưởng -> Miền hút -> Miền trưởng thành", "C. Miền trưởng thành -> Miền chóp rễ", "D. Miền lông hút -> Miền mạch gỗ"], correct: 1},
-            {q: "Tế bào lông hút có đặc điểm cấu tạo tế bào như thế nào?", opts: ["A. Thành tế bào dày, phủ cutin kín", "B. Thành tế bào mỏng, không phủ cutin, không bào trung tâm lớn chứa nhiều chất hoà tan", "C. Có nhiều lục lạp lớn", "D. Là tế bào chết hoá gỗ"], correct: 1},
-            {q: "Dịch tế bào biểu bì lông hút ở trạng thái nào so với dịch trong đất?", opts: ["A. Ưu trương", "B. Nhược trương", "C. Đẳng trương", "D. Trung tính"], correct: 0},
-            {q: "Nước di chuyển từ đất vào tế bào lông hút theo cơ chế nào?", opts: ["A. Chủ động cần tiêu tốn ATP", "B. Thẩm thấu", "C. Thực bào", "D. Ẩm bào"], correct: 1},
-            {q: "Nguyên nhân chính giúp dịch tế bào lông hút luôn duy trì nồng độ cao là do:", opts: ["A. Rễ hút nước mạnh và tích luỹ chất tan từ chuyển hoá vật chất", "B. Lá cây không thoát hơi nước", "C. Đất luôn bão hoà nước", "D. Áp suất khí quyển thấp"], correct: 0},
-            {q: "Rễ hấp thụ chất khoáng từ đất theo mấy cơ chế?", opts: ["A. 1 cơ chế", "B. 2 cơ chế (thụ động và chủ động)", "C. 3 cơ chế", "D. 4 cơ chế"], correct: 1},
-            {q: "Cơ chế thụ động trong hấp thụ khoáng diễn ra theo chiều nào?", opts: ["A. Ngược chiều gradient nồng độ", "B. Từ nơi có nồng độ chất khoáng thấp đến cao", "C. Khuếch tán từ nơi có nồng độ cao (đất) vào nơi có nồng độ thấp (rễ)", "D. Cần tiêu tốn năng lượng ATP"], correct: 2},
-            {q: "Cơ chế chủ động trong hấp thụ khoáng có đặc điểm gì?", opts: ["A. Vận chuyển ngược chiều gradient nồng độ nhờ chất mang và tiêu tốn năng lượng ATP", "B. Không cần chất mang", "C. Diễn ra tự động theo građi nồng độ", "D. Chỉ xảy ra khi cây bị héo"], correct: 0},
-            {q: "Nước và chất khoáng sau khi vào lông hút được vận chuyển vào mạch gỗ của rễ theo mấy con đường?", opts: ["A. 1 con đường", "B. 2 con đường (gian bào và tế bào chất)", "C. 3 con đường", "D. 4 con đường"], correct: 1},
-            {q: "Đặc điểm của con đường gian bào trong vận chuyển nước ở rễ là:", opts: ["A. Đi qua không gian giữa các tế bào và thành tế bào, bị chặn lại bởi đai Caspary ở nội bì", "B. Đi xuyên qua chất nguyên sinh của tế bào", "C. Không bao giờ qua lớp nội bì", "D. Chỉ vận chuyển chất hữu cơ"], correct: 0},
-            {q: "Vành đai Caspary nằm ở lớp tế bào nào của rễ?", opts: ["A. Biểu bì", "B. Vỏ", "C. Nội bì", "D. Trụ giữa"], correct: 2},
-            {q: "Vai trò của đai Caspary không thấm nước ở nội bì là gì?", opts: ["A. Giúp nước đi nhanh hơn", "B. Giúp thực vật kiểm soát được lượng chất khoáng đi vào mạch gỗ", "C. Ngăn cản hoàn toàn nước vào rễ", "D. Tiêu diệt vi khuẩn có hại"], correct: 1},
-            {q: "Đặc điểm của con đường tế bào chất (symplast) là:", opts: ["A. Nước đi qua không gian gian bào", "B. Nước và chất khoáng đi từ tế bào chất tế bào này qua tế bào khác thông qua hệ thống cầu sinh chất", "C. Di chuyển hoàn toàn bên ngoài màng sinh chất", "D. Không cần qua lớp nội bì"], correct: 1},
-            {q: "Sự trao đổi khoáng ở thực vật có đặc điểm gì đi kèm?", opts: ["A. Đi kèm với quá trình trao đổi nước vì khoáng hoà tan trong nước", "B. Diễn ra độc lập hoàn toàn với nước", "C. Chỉ diễn ra vào ban đêm", "D. Không cần dung môi"], correct: 0},
-            {q: "Thực vật thuỷ sinh hấp thụ nước và khoáng bằng cách nào?", opts: ["A. Chỉ qua rễ", "B. Hấp thụ trực tiếp từ môi trường nước qua bề mặt tế bào biểu bì của hầu hết các cơ quan", "C. Qua khí khổng của lá", "D. Nhờ nấm rễ hỗ trợ"], correct: 1},
-            {q: "Khi cây thiếu Nitrogen, biểu hiện rõ nhất ở lá là gì?", opts: ["A. Lá có màu xanh đậm", "B. Lá có màu vàng, sinh trưởng chậm, cây yếu", "C. Lá bị xoăn và rụng ngay", "D. Lá biến thành màu tím đỏ"], correct: 1},
-            {q: "Hiện tượng thừa Nitrogen sẽ dẫn đến hậu quả gì cho cây?", opts: ["A. Cây phát triển mạnh, thân lá mềm, dễ đổ và dễ mắc sâu bệnh", "B. Cây ra hoa nhanh chóng", "C. Rễ cây ngừng phát triển hoàn toàn", "D. Lá cây dày lên gấp đôi"], correct: 0},
-            {q: "Nấm rễ (Mycorrhiza) là hiện tượng cộng sinh giữa:", opts: ["A. Vi khuẩn và rễ cây", "B. Nấm và rễ cây trên cạn", "C. Tảo và nấm", "D. Côn trùng và rễ cây"], correct: 1},
-            {q: "Thành phần cấu tạo của tế bào lông hút đảm bảo điều kiện gì để tăng cường thẩm thấu?", opts: ["A. Không bào lớn chứa nhiều chất tan", "B. Thành tế bào dày cứng bằng lignin", "C. Màng sinh chất mất khả năng thấm chọn lọc", "D. Chứa nhiều hạt sắc tố đỏ"], correct: 0},
-            {q: "Ý nghĩa sinh học của hiện tượng rễ cây đâm sâu và phân nhánh rộng trong đất là gì?", opts: ["A. Tăng diện tích tiếp xúc với nguồn nước và khoáng", "B. Giúp cây hô hấp hiếu khí tốt hơn", "C. Làm giảm áp suất thẩm thấu của rễ", "D. Ngăn cản quá trình thoát hơi nước"], correct: 0},
-            {q: "Ion khoáng nào sau đây khi vào rễ đi qua màng tế bào theo cơ chế chủ động đòi hỏi phải có gì?", opts: ["A. Chất mang (protein vận chuyển) và năng lượng ATP", "B. Áp suất khí quyển", "C. Lực cản của đai Caspary", "D. Nhiệt độ thấp"], correct: 0},
-            {q: "Phát biểu nào sau đây đúng khi nói về sự hấp thụ nước ở tế bào lông hút?", opts: ["A. Nước đi từ đất (nhược trương) vào tế bào lông hút (ưu trương)", "B. Nước đi từ trong rễ ra ngoài đất", "C. Nước di chuyển không cần chênh lệch nồng độ", "D. Nước chỉ di chuyển bằng con đường thụ động không qua màng"], correct: 0},
-            {q: "Thành phần nào của rễ tham gia bảo vệ các tế bào non bên trong khỏi bị tổn thương khi đâm vào đất?", opts: ["A. Miền chóp rễ", "B. Miền hút", "C. Miền trưởng thành", "D. Đai Caspary"], correct: 0},
-            {q: "Trong các nguyên tố khoáng thiết yếu, nguyên tố nào đóng vai trò cấu trúc thành tế bào?", opts: ["A. Calcium (Ca)", "B. Nitrogen (N)", "C. Phosphorus (P)", "D. Potassium (K)"], correct: 0},
-            {q: "Ion khoáng nào sau đây có vai trò hoạt hoá enzyme liên quan đến sự vận chuyển gốc phosphate?", opts: ["A. Magnesium (Mg)", "B. Iron (Fe)", "C. Zinc (Zn)", "D. Chlorine (Cl)"], correct: 0},
-            {q: "Dạng hấp thụ của nguyên tố Phosphorus (P) đối với thực vật là gì?", opts: ["A. PO4(3-) và HPO4(2-)", "B. NO3- và NH4+", "C. K+", "D. Ca(2+)"], correct: 0},
-            {q: "Nguyên tố Sulfur (S) tham gia cấu tạo nên hợp chất nào trong cây?", opts: ["A. Protein và coenzyme", "B. Diệp lục", "C. Tinh bột", "D. Cellulose"], correct: 0},
-            {q: "Nguyên tố Iron (Fe) có vai trò chủ yếu là gì trong cơ thể thực vật?", opts: ["A. Thành phần của cytochrome, hoạt hoá enzyme tổng hợp diệp lục", "B. Cấu tạo màng tế bào", "C. Điều hoà áp suất thẩm thấu", "D. Cố định đạm"], correct: 0},
-            {q: "Nguyên tố Manganese (Mn) tham gia cấu trúc của enzyme nào?", opts: ["A. Enzyme oxy hoá khử và quang hợp", "B. Enzyme tiêu hoá", "C. Enzyme phân giải protein", "D. Enzyme tổng hợp cellulose"], correct: 0},
-            {q: "Nguyên tố Zinc (Zn) có vai trò sinh lí nào đối với thực vật?", opts: ["A. Tham gia hình thành diệp lục và hoạt hoá enzyme xúc tác quang hợp, hô hấp", "B. Cấu tạo thành tế bào", "C. Cân bằng nước trực tiếp", "D. Cố định N2"], correct: 0},
-            {q: "Hiện tượng nào sau đây phản ánh rõ nét nhất vai trò của áp suất rễ?", opts: ["A. Hiện tượng rỉ nhựa và ứ giọt", "B. Hiện tượng lá héo vào buổi trưa", "C. Hiện tượng khí khổng đóng", "D. Hiện tượng quang hợp"], correct: 0},
-            {q: "Khi nồng độ chất tan ở dung dịch đất cao hơn nhiều so với dịch tế bào lông hút (đất nhiễm mặn hoặc bón phân quá đặc) sẽ dẫn đến hiện tượng gì?", opts: ["A. Cây bị mất nước, héo và chết (hạn sinh lí)", "B. Cây hút nước cực mạnh", "C. Rễ phát triển dài ra nhanh chóng", "D. Cây không bị ảnh hưởng gì"], correct: 0},
-            {q: "Phát biểu nào sau đây không đúng về đặc điểm của con đường gian bào ở rễ?", opts: ["A. Dịch di chuyển xuyên qua tế bào chất của toàn bộ tế bào vỏ", "B. Dịch di chuyển qua gian bào và thành tế bào", "C. Bị chặn lại ở nội bì do đai Caspary", "D. Tốc độ di chuyển nhanh"], correct: 0}
-        ];
-
-        // --- ĐỀ 2: ĐÚNG 50 CÂU HOÀN CHỈNH VỀ MẠCH GỖ, MẠCH RÂY & THOÁT HƠI NƯỚC ---
-        const quiz2 = [
-            {q: "Mạch gỗ (xylem) được cấu tạo từ hai loại tế bào chính là:", opts: ["A. Quản bào và mạch ống", "B. Tế bào kèm và ống rây", "C. Tế bào mô mềm và biểu bì", "D. Tế bào sợi và tế bào kèm"], correct: 0},
-            {q: "Đặc điểm của tế bào mạch gỗ (quản bào và mạch ống) khi trưởng thành là:", opts: ["A. Là các tế bào sống nhân lớn", "B. Là các tế bào chết, thành đã hoá lignin (hoá gỗ)", "C. Chứa nhiều diệp lục", "D. Có màng sinh chất sống hoạt động mạnh"], correct: 1},
-            {q: "Dịch mạch gỗ vận chuyển trong cây gồm thành phần chính là:", opts: ["A. Nước và chất khoáng hoà tan (cùng một số chất hữu cơ tổng hợp ở rễ)", "B. Chỉ có đường sucrose đậm đặc", "C. Các hormone sinh trưởng dạng khí", "D. Protein thuần tuý"], correct: 0},
-            {q: "Chiều vận chuyển của dòng mạch gỗ là gì?", opts: ["A. Từ lá xuống rễ", "B. Từ rễ, qua thân, lên lá (vận chuyển một chiều)", "C. Vận chuyển hai chiều linh hoạt", "D. Chỉ vận chuyển theo chiều ngang"], correct: 1},
-            {q: "Động lực nào đẩy dòng mạch gỗ từ rễ lên thân cao hàng trăm mét?", opts: ["A. Áp suất rễ, lực kéo do thoát hơi nước ở lá, lực liên kết giữa các phân tử nước", "B. Lực hút của khí khổng", "C. Sự co bóp của mạch ống", "D. Năng lượng từ rễ tiêu tốn liên tục"], correct: 0},
-            {q: "Hiện tượng rỉ nhựa khi cắt ngang thân cây chứng minh cho động lực nào?", opts: ["A. Lực thoát hơi nước", "B. Áp suất rễ", "C. Lực bám giữa nước và thành mạch", "D. Quang hợp ở thân"], correct: 1},
-            {q: "Hiện tượng ứ giọt ở mép lá thường xảy ra vào thời điểm nào?", opts: ["A. Trưa hè nắng gắt", "B. Buổi sáng sớm hoặc độ ẩm không khí cao khi thoát hơi nước bị ngưng trệ", "C. Chiều tối mùa khô", "D. Ban ngày trời khô hanh"], correct: 1},
-            {q: "Mạch rây (phloem) được cấu tạo từ các tế bào nào?", opts: ["A. Tế bào ống rây và tế bào kèm", "B. Quản bào và mạch ống", "C. Tế bào nội bì và biểu bì", "D. Biểu bì và mô giậu"], correct: 0},
-            {q: "Đặc điểm sắp xếp của các tế bào ống rây trong mạch rây là:", opts: ["A. Xếp chồng lên nhau theo chiều thẳng đứng và thông với nhau qua các lỗ ở hai đầu tận cùng", "B. Là các tế bào chết hoàn toàn", "C. Không có tế bào kèm hỗ trợ", "D. Chỉ vận chuyển một chiều từ dưới lên"], correct: 0},
-            {q: "Vai trò của tế bào kèm nằm dọc theo ống rây là gì?", opts: ["A. Cung cấp năng lượng và nguyên liệu duy trì sự sống cho các tế bào ống rây", "B. Trực tiếp vận chuyển nước từ rễ", "C. Tạo ra đai Caspary", "D. Bảo vệ mạch rây khỏi sâu bệnh"], correct: 0},
-            {q: "Thành phần chính của dịch mạch rây là gì?", opts: ["A. Đường sucrose, bên cạnh đó còn có amino acid, hormone, chất khoáng...", "B. Chỉ có nước cất", "C. Ion vô cơ thuần tuý", "D. Tinh bột không tan"], correct: 0},
-            {q: "Chiều vận chuyển của dòng mạch rây là gì?", opts: ["A. Chỉ đi theo một chiều từ rễ lên lá", "B. Có thể di chuyển theo hai hướng từ cơ quan nguồn (lá) đến cơ quan đích hoặc cơ quan dự trữ và ngược lại", "C. Chỉ di chuyển theo chiều ngang của thân", "D. Không di chuyển"], correct: 1},
-            {q: "Thoát hơi nước ở lá thực vật thực chất là gì?", opts: ["A. Sự bay hơi của nước qua bề mặt cơ thể thực vật vào khí quyển", "B. Sự ngưng tụ nước thành sương", "C. Quá trình cây hút nước từ rễ", "D. Sự chuyển hoá nước thành khí oxygen"], correct: 0},
-            {q: "Cơ quan thoát hơi nước chủ yếu của thực vật là:", opts: ["A. Rễ", "B. Thân", "C. Lá", "D. Hoa"], correct: 2},
-            {q: "Thoát hơi nước ở lá diễn ra qua hai con đường chính nào?", opts: ["A. Qua bề mặt lá (qua lớp cutin) và qua khí khổng", "B. Qua mạch gỗ và mạch rây", "C. Qua rễ và qua hoa", "D. Qua gian bào và qua tế bào chất"], correct: 0},
-            {q: "Ở cây non, lượng nước thoát qua bề mặt lá so với qua khí khổng như thế nào?", opts: ["A. Rất nhỏ không đáng kể", "B. Tương đương với qua khí khổng do lớp cutin còn mỏng", "C. Lớn hơn gấp 10 lần", "D. Không diễn ra"], correct: 1},
-            {q: "Khi cây trưởng thành, lớp cutin dày lên thì lượng nước thoát qua bề mặt lá chiếm khoảng bao nhiêu?", opts: ["A. 10% - 20%", "B. 50% - 60%", "C. 80% - 90%", "D. 100%"], correct: 0},
-            {q: "Con đường thoát hơi nước chủ yếu và được điều tiết bởi thực vật là:", opts: ["A. Qua bề mặt lá", "B. Qua khí khổng", "C. Qua cuống lá", "D. Qua lớp tế bào biểu bì dưới"], correct: 1},
-            {q: "Khí khổng là gì?", opts: ["A. Là các lỗ hở trên bề mặt lớp tế bào biểu bì lá được tạo nên giữa hai tế bào khí khổng", "B. Là các mạch dẫn nhựa", "C. Là các tế bào biểu bì chết", "D. Là các hạt lục lạp ở lá"], correct: 0},
-            {q: "Khi tế bào khí khổng hút nước (trương nước), thành nào của tế bào dãn nhanh hơn làm khí khổng mở ra?", opts: ["A. Thành ngoài mỏng dãn nhanh hơn thành trong dày", "B. Thành trong dày dãn nhanh hơn", "C Cả hai thành dãn bằng nhau", "D. Thành bên co lại"], correct: 0},
-            {q: "Khi tế bào khí khổng mất nước, hiện tượng gì xảy ra?", opts: ["A. Khí khổng mở to hơn", "B. Thành tế bào xẹp xuống làm khí khổng đóng lại", "C. Khí khổng bị vỡ", "D. Không có thay đổi"], correct: 1},
-            {q: "Hai tác nhân chính điều tiết sự đóng mở của khí khổng là gì?", opts: ["A. Ánh sáng và stress (ví dụ hạn hán)", "B. Gió và nhiệt độ không khí", "C. Độ cao của cây và trọng lực", "D. Lượng phân bón gốc"], correct: 0},
-            {q: "Ánh sáng thúc đẩy khí khổng mở bằng cách nào?", opts: ["A. Tăng tổng hợp đường trong tế bào khí khổng, hoạt hoá bơm ion làm tăng áp suất thẩm thấu hút nước", "B. Làm bốc hơi hết nước trong tế bào khí khổng", "C. Làm đóng kín lỗ khí", "D. Tiêu diệt tế bào kèm"], correct: 0},
-            {q: "Khi thực vật bị stress hạn hán, cây tăng tổng hợp chất nào để làm khí khổng đóng lại, hạn chế mất nước?", opts: ["A. Abscisic acid (ABA)", "B. Auxin", "C. Cytokinin", "D. Ethylene"], correct: 0},
-            {q: "Vai trò quan trọng nhất của quá trình thoát hơi nước đối với cây là gì?", opts: ["A. Tạo lực kéo hút nước và chất khoáng từ rễ lên, đồng thời làm giảm nhiệt độ bề mặt lá", "B. Cung cấp trực tiếp năng lượng cho rễ", "C. Làm cây ngừng sinh trưởng vào ban đêm", "D. Tạo ra khí carbon dioxide cho quang hợp"], correct: 0},
-            {q: "Mạch ống trong cấu tạo mạch gỗ khác quản bào ở điểm nào chủ yếu?", opts: ["A. Các tế bào xếp chồng lên nhau theo chiều thẳng đứng, thủng ở đầu tận cùng tạo thành ống rộng hơn", "B. Là tế bào sống có nhân", "C. Chỉ có ở thực vật thuỷ sinh", "D. Vận chuyển chất hữu cơ"], correct: 0},
-            {q: "Lực liên kết giữa các phân tử nước trong dòng mạch gỗ được tạo nên nhờ hiện tượng gì?", opts: ["A. Lực hút giữa các phân tử nước với nhau qua cầu hydrogen", "B. Lực đẩy của áp suất khí quyển", "C. Tác dụng của lực ly tâm", "D. Sự co bóp của tế bào sống"], correct: 0},
-            {q: "Bất kỳ tác động nào làm ngắt quãng dòng nước liên tục trong thân cây sẽ dẫn đến hiện tượng gì?", opts: ["A. Làm ngắt quãng dòng nước vận chuyển trong thân", "B. Giúp cây phát triển nhanh hơn", "C. Làm tăng áp suất rễ lập tức", "D. Không gây ảnh hưởng gì"], correct: 0},
-            {q: "Thực vật sống ở vùng khô hạn có đặc điểm thích nghi nào liên quan đến lá để giảm thoát hơi nước?", opts: ["A. Lá biến thành gai hoặc có tầng cutin rất dày, khí khổng nằm sâu", "B. Lá to bản, mỏng và có nhiều khí khổng lộ thiên", "C. Không có lớp biểu bì", "D. Tăng gấp đôi diện tích lá"], correct: 0},
-            {q: "Khoảng bao nhiêu phần trăm lượng nước cây hấp thụ được sử dụng cho các hoạt động sống, phần lớn còn lại đi đâu?", opts: ["A. Khoảng 2%, còn 98% mất đi qua quá trình thoát hơi nước", "B. Khoảng 50%, còn 50% mất đi", "C. Khoảng 90%, còn 10% mất đi", "D. Khoảng 100% được giữ lại trong cây"], correct: 0},
-            {q: "Trong quá trình thoát hơi nước, khí khổng mở tạo điều kiện cho khí nào khuếch tán vào lá cung cấp cho quang hợp?", opts: ["A. CO2", "B. O2", "C. N2", "D. H2"], correct: 0},
-            {q: "Thoát hơi nước giúp lá cây tránh hiện tượng gì vào những ngày nắng nóng?", opts: ["A. Bị tăng nhiệt độ bề mặt quá mức làm hư hại các tế bào lá", "B. Bị đóng băng", "C. Bị ngập úng", "D. Bị thiếu nitrogen"], correct: 0},
-            {q: "Thành phần tế bào ống rây thông với nhau qua các lỗ ở đâu?", opts: ["A. Hai đầu tận cùng của tế bào", "B. Thành bên của tế bào", "C. Vùng trung tâm rễ", "D. Biểu bì lá"], correct: 0},
-            {q: "Cơ quan nguồn của dòng mạch rây trong cây thường là bộ phận nào?", opts: ["A. Lá (nơi quang hợp tạo ra chất hữu cơ)", "B. Rễ cọc", "C. Vỏ thân già", "D. Hạt giống"], correct: 0},
-            {q: "Cơ quan đích của dòng mạch rây bao gồm những bộ phận nào?", opts: ["A. Cơ quan dự trữ (củ, quả) hoặc cơ quan đang sinh trưởng (lá non, chồi non, rễ)", "B. Chỉ có khí khổng", "C. Chỉ có biểu bì lá", "D. Chỉ có biểu bì rễ"], correct: 0},
-            {q: "Gradient nồng độ đóng vai trò gì trong sự vận chuyển chất tan ở mạch rây?", opts: ["A. Tạo chiều di chuyển xuôi theo gradient nồng độ từ cơ quan nguồn đến cơ quan đích", "B. Làm đảo chiều dòng vận chuyển liên tục", "C. Ngăn cản hoàn toàn dòng đường", "D. Không có vai trò gì"], correct: 0},
-            {q: "Nước từ đâu có thể chuyển sang mạch rây để hỗ trợ quá trình vận chuyển chất tan?", opts: ["A. Từ mạch gỗ chuyển sang", "B. Từ không khí hấp thụ trực tiếp", "C. Từ rễ đẩy lên trực tiếp không qua trung gian", "D. Từ khí khổng"], correct: 0},
-            {q: "Quá trình vận chuyển chất hữu cơ trong mạch rây diễn ra theo chiều hướng nào so với mạch gỗ?", opts: ["A. Có thể đi theo hai hướng linh hoạt (từ lá xuống rễ hoặc từ rễ/cơ quan dự trữ lên)", "B. Luôn luôn một chiều từ dưới lên", "C. Chỉ theo chiều ngang", "D. Hoàn toàn đứng yên"], correct: 0},
-            {q: "Tế bào kèm có đặc điểm nhân như thế nào?", opts: ["A. Là tế bào sống có nhân lớn, trao đổi chất mạnh mẽ", "B. Là tế bào chết không nhân", "C. Không có bào quan", "D. Bị hoá gỗ hoàn toàn"], correct: 0},
-            {q: "Khi cường độ ánh sáng quá mạnh chiếu vào lá có thể gây ra hiện tượng gì đối với khí khổng?", opts: ["A. Làm tăng nhiệt độ quá mức khiến tế bào khí khổng bị mất nước và đóng lại", "B. Làm khí khổng mở rộng mãi mãi không bao giờ đóng", "C. Làm biến mất hoàn toàn khí khổng", "D. Không gây tác động gì"], correct: 0},
-            {q: "Hệ thống lỗ bên thông giữa các tế bào quản bào giúp ích gì?", opts: ["A. Cho phép dòng nước và khoáng chuyền ngang qua lại giữa các mạch dẫn", "B. Giúp thoát khí độc ra ngoài", "C. Cố định nitrogen", "D. Ngăn nước di chuyển"], correct: 0},
-            {q: "Đặc điểm cấu tạo giải phẫu nào của lá cây giúp hạn chế tối đa sự thoát hơi nước thừa?", opts: ["A. Lớp cutin bọc ngoài biểu bì và sự phân bố khí khổng (thường ở mặt dưới)", "B. Lớp tế bào mạch gỗ dày đặc ở biểu bì", "C. Sự vắng mặt hoàn toàn của gân lá", "D. Không có lỗ khí khổng"], correct: 0},
-            {q: "Hiện tượng ứ giọt khác với hiện tượng rỉ nhựa ở điểm nào cơ bản?", opts: ["A. Ứ giọt xảy ra ở mép lá do áp suất rễ đẩy nước ra khi độ ẩm cao, còn rỉ nhựa xảy ra ở vết cắt thân", "B. Ứ giọt xảy ra ở rễ, rỉ nhựa xảy ra ở lá", "C. Hai hiện tượng hoàn toàn giống nhau", "D. Ứ giọt chỉ xảy ra vào mùa đông"], correct: 0},
-            {q: "Khi độ ẩm không khí thấp, cường độ thoát hơi nước của cây có xu hướng thay đổi như thế nào?", opts: ["A. Tăng lên, qua đó thúc đẩy quá trình hấp thụ nước và khoáng ở rễ", "B. Giảm xuống bằng không", "C. Không thay đổi", "D. Làm ngưng trệ hoàn toàn mạch gỗ"], correct: 0},
-            {q: "Vai trò của lực bám giữa các phân tử nước với thành mạch gỗ là gì?", opts: ["A. Giúp cột nước bám chặt vào thành mạch, chống lại trọng lực kéo cột nước tụt xuống", "B. Làm tan rã phân tử nước", "C. Cung cấp năng lượng ATP", "D. Làm tắc nghẽn mạch dẫn"], correct: 0},
-            {q: "Tế bào khí khổng chứa bào quan nào có hạt diệp lục tham gia quang hợp tổng hợp đường?", opts: ["A. Lục lạp", "B. Ti thể", "C. Lưới nội chất", "D. Ribosome"], correct: 0},
-            {q: "Hiện tượng cây bị ngập úng lâu ngày làm rễ thiếu oxygen dẫn đến hậu quả gì?", opts: ["A. Giảm hô hấp tế bào rễ, không cung cấp đủ năng lượng cho hút khoáng chủ động, làm rễ bị tổn thương", "B. Kích thích rễ hút nước mạnh gấp đôi", "C. Giúp cây quang hợp nhanh hơn", "D. Không ảnh hưởng gì đến rễ"], correct: 0},
-            {q: "Cơ chế đóng mở khí khổng chủ yếu dựa vào sự thay đổi hình dạng của tế bào nào?", opts: ["A. Hai tế bào hạt đậu (tế bào khí khổng)", "B. Tế bào biểu bì thông thường", "C. Tế bào mô giậu", "D. Tế bào mạch rây"], correct: 0},
-            {q: "Cấu trúc thành trong dày và thành ngoài mỏng của tế bào khí khổng có ý nghĩa gì?", opts: ["A. Khi trương nước, thành mỏng căng nhanh kéo thành dày cong lại làm mở lỗ khí", "B. Giúp khí khổng cứng không bao giờ thay đổi", "C. Ngăn cản hoàn toàn ánh sáng", "D. Giữ nước bên trong tuyệt đối"], correct: 0},
-            {q: "Động lực trung tâm kéo dòng nước đi từ rễ lên lá ở những cây cao lớn là gì?", opts: ["A. Lực kéo do thoát hơi nước ở lá (transpiration pull)", "B. Áp suất rễ", "C. Trọng lực trái đất", "D. Lực co cơ của thân"], correct: 0}
-        ];
-
-        // --- ĐỀ 3: ĐÚNG 50 CÂU HOÀN CHỈNH VỀ DINH DƯỠNG NITROGEN & ỨNG DỤNG THỰC TIỄN ---
-        const quiz3 = [
-            {q: "Nitrogen có vai trò đặc biệt quan trọng đối với thực vật vì:", opts: ["A. Vừa có vai trò cấu trúc, vừa giữ chức năng điều tiết nhiều quá trình sinh lí", "B. Chỉ đóng vai trò cung cấp năng lượng", "C. Giúp cây không bao giờ bị sâu bệnh", "D. Thay thế hoàn toàn vai trò của nước"], correct: 0},
-            {q: "Trong cơ thể thực vật, nitrogen là thành phần cấu tạo của các hợp chất hữu cơ quan trọng nào?", opts: ["A. Protein, nucleic acid, diệp lục...", "B. Cellulose và tinh bột", "C. Tinh bột và đường đơn", "D. Lipid đơn giản"], correct: 0},
-            {q: "Quá trình chuyển hóa nitrogen từ dạng NO3- thành dạng NH4+ trong cây gọi là:", opts: ["A. Quá trình khử nitrate", "B. Quá trình đồng hoá ammonium", "C. Quá trình cố định đạm", "D. Quá trình nitrat hoá"], correct: 0},
-            {q: "Trong quá trình khử nitrate, dưới sự xúc tác của enzyme nitrate reductase và nitrite reductase, ion NO3- chuyển hoá qua trung gian thành:", opts: ["A. NO2- sau đó thành NH4+", "B. N2 tự do", "C. NH3 bay hơi", "D. Amino acid trực tiếp"], correct: 0},
-            {q: "Quá trình đồng hoá ammonium trong cây là quá trình kết hợp NH4+ với chất nào để tạo amino acid và amide?", opts: ["A. Keto acid hoặc dicarboxylic acid", "B. Glucose", "C. Nước cất", "D. Khoáng vi lượng"], correct: 0},
-            {q: "Sản phẩm khi ammonium kết hợp với pyruvic acid là gì?", opts: ["A. Alanine", "B. Glutamin", "C. Cellulose", "D. Sucrose"], correct: 0},
-            {q: "Ý nghĩa của quá trình tổng hợp amide (ví dụ kết hợp với glutamic acid tạo glutamin) trong cây là gì?", opts: ["A. Giải độc cho tế bào khi lượng NH4+ tích luỹ quá nhiều và là cơ chế dự trữ ammonium", "B. Làm cây bị ngộ độc chết", "C. Giúp quang hợp ngừng lại", "D. Tăng thoát hơi nước"], correct: 0},
-            {q: "Nguồn cung cấp nitrogen tự nhiên chủ yếu cho cây trồng là từ đâu?", opts: ["A. Đất (nhờ vi sinh vật cố định đạm, sấm sét phân giải xác sinh vật)", "B. Nước mưa nguyên chất", "C. Ánh sáng mặt trời trực tiếp", "D. Không khí qua lá cây"], correct: 0},
-            {q: "Con người bổ sung nitrogen cho cây trồng thông qua hoạt động nào?", opts: ["A. Bón phân (phân vô cơ chứa đạm urea, NH4+, NO3- và phân hữu cơ)", "B. Tưới nước muối", "C. Phun thuốc trừ sâu", "D. Cắt tỉa cành lá"], correct: 0},
-            {q: "Các nhân tố ngoại cảnh chính ảnh hưởng đến hoạt động trao đổi nước và dinh dưỡng khoáng gồm:", opts: ["A. Ánh sáng, nhiệt độ, độ ẩm đất và không khí", "B. Chỉ có gió và độ cao", "C. Chỉ có thành phần giống cây", "D. Áp suất khí quyển tuyệt đối"], correct: 0},
-            {q: "Ánh sáng ảnh hưởng trực tiếp đến quá trình nào dẫn đến trao đổi nước?", opts: ["A. Quá trình đóng mở khí khổng (thoát hơi nước)", "B. Sự phát triển của chóp rễ", "C. Quá trình hình thành đai Caspary", "D. Sự hoá gỗ của mạch ống"], correct: 0},
-            {q: "Trong giới hạn sinh thái, nhiệt độ tăng sẽ làm tốc độ hấp thụ nước và khoáng của rễ như thế nào?", opts: ["A. Tăng lên nhờ tăng cường hô hấp của rễ và khuếch tán chất khoáng", "B. Giảm xuống bằng không", "C. Không thay đổi", "D. Ngừng hoàn toàn"], correct: 0},
-            {q: "Khi nhiệt độ môi trường vùng rễ tăng quá cao (trên 45 độ C) thì sẽ gây hậu quả gì?", opts: ["A. Lông hút bị tổn thương hoặc chết, enzyme bị biến đổi làm giảm hoặc dừng hấp thụ nước và khoáng", "B. Cây hút nước tối đa", "C. Rễ phát triển cực mạnh", "D. Không ảnh hưởng gì"], correct: 0},
-            {q: "Biện pháp nào được dùng trong sản xuất để hạn chế ảnh hưởng của nhiệt độ thấp đến rễ cây?", opts: ["A. Ủ ấm gốc cây bằng rơm rạ, bao tải gai hoặc trồng cây thuỷ canh bọc cách nhiệt", "B. Bón thật nhiều phân đạm", "C. Phơi khô đất trồng", "D. Cắt bỏ toàn bộ rễ phụ"], correct: 0},
-            {q: "Độ ẩm đất ảnh hưởng như thế nào đến rễ cây?", opts: ["A. Trong giới hạn nhất định, độ ẩm đất tỉ lệ thuận với khả năng hấp thụ nước và khoáng giúp rễ hô hấp và sinh trưởng tốt", "B. Độ ẩm càng cao cây càng chết", "C. Độ ẩm không ảnh hưởng gì đến rễ", "D. Chỉ ảnh hưởng đến lá"], correct: 0},
-            {q: "Độ ẩm không khí ảnh hưởng gián tiếp đến trao đổi nước và khoáng thông qua tác động nào?", opts: ["A. Quá trình thoát hơi nước ở lá", "B. Sự hấp thụ khoáng chủ động", "C. Hoạt động của vi sinh vật đất", "D. Quá trình tổng hợp protein"], correct: 0},
-            {q: "Trong sản xuất nông nghiệp, việc tưới nước hợp lí cho cây trồng có nghĩa là gì?", opts: ["A. Cung cấp vừa đủ lượng nước cần thiết, đúng nhu cầu sinh lí của cây, đúng thời điểm và đúng phương pháp", "B. Tưới ngập lụt quanh năm", "C. Chỉ tưới một lần khi gieo trồng", "D. Tưới vào ban đêm với lượng lớn nhất"], correct: 0},
-            {q: "Trong sản xuất, bón phân với lượng quá ít (thiếu hụt) sẽ dẫn đến hiện tượng gì?", opts: ["A. Cây còi cọc, chậm lớn và xuất hiện triệu chứng thiếu khoáng, giảm năng suất", "B. Năng suất đạt tối đa", "C. Cây phát triển khổng lồ", "D. Đất bị ô nhiễm nặng"], correct: 0},
-            {q: "Khi bón phân quá nhiều (vượt mức tối ưu) sẽ gây ra hậu quả gì?", opts: ["A. Gây độc cho cây, làm ô nhiễm đất và nước ngầm, tiêu diệt vi sinh vật có lợi", "B. Giúp cây kháng sâu bệnh tuyệt đối", "C. Làm đất màu mỡ vĩnh viễn", "D. Không ảnh hưởng gì"], correct: 0},
-            {q: "Bốn nguyên tắc vàng trong bón phân (nguyên tắc 4 đúng) gồm:", opts: ["A. Đúng loại phân, đúng liều lượng, đúng thời điểm, đúng phương pháp", "B. Đúng giá, đúng cửa hàng, đúng người, đúng thời gian", "C. Đúng mùa, đúng giống, đúng thời tiết, đúng loại đất", "D. Đúng giờ, đúng lượng nước, đúng độ pH, đúng nhiệt độ"], correct: 0},
-            {q: "Nấm rễ (Mycorrhiza) mang lại lợi ích gì cho thực vật trên cạn?", opts: ["A. Hỗ trợ thực vật hấp thụ nước và chất khoáng từ đất, cải thiện đặc tính môi trường đất, kích thích sinh trưởng", "B. Làm giảm tốc độ quang hợp", "C. Tiêu diệt rễ chính của cây", "D. Làm cây bị nhiễm bệnh nặng"], correct: 0},
-            {q: "Vai trò điều tiết của nitrogen trong cơ thể thực vật được thể hiện qua việc tham gia cấu tạo nên chất nào?", opts: ["A. Enzyme và hormone thực vật", "B. Tinh bột và cellulose", "C. Lipid màng", "D. Nước thuần tuý"], correct: 0},
-            {q: "Giai đoạn đầu tiên của quá trình khử nitrate trong cây là ion nitrate biến đổi thành gì?", opts: ["A. Ion nitrite (NO2-)", "B. Khí N2", "C. Ammonium (NH4+)", "D. Đường sucrose"], correct: 0},
-            {q: "Enzyme xúc tác bước chuyển hóa từ NO3- thành NO2- trong quá trình khử nitrate là gì?", opts: ["A. Nitrate reductase", "B. Amylase", "C. Cellulase", "D. Nitrogenase"], correct: 0},
-            {q: "Enzyme xúc tác bước chuyển hóa từ NO2- thành NH4+ trong cây là gì?", opts: ["A. Nitrite reductase", "B. Protease", "C. Lipase", "D. Urease"], correct: 0},
-            {q: "Khi cây trồng bị thiếu nitrogen, biểu hiện bên ngoài dễ nhận thấy nhất là gì?", opts: ["A. Lá có màu vàng, sinh trưởng chậm", "B. Lá xanh đậm, thân mập mạp", "C. Cây ra hoa rất sớm", "D. Rễ cây phình to thành củ"], correct: 0},
-            {q: "Trong tự nhiên, quá trình cố định nitrogen khí quyển thành dạng NH3/NH4+ nhờ các nhóm tác nhân nào?", opts: ["A. Vi khuẩn cố định đạm và hiện tượng sấm sét", "B. Ánh sáng mặt trời và gió bão", "C. Nước mưa và độ ẩm đất", "D. Nấm rễ và tảo đơn bào"], correct: 0},
-            {q: "Phân bón hữu cơ (như phân chuồng, phân xanh) được khuyến khích sử dụng vì lý do gì?", opts: ["A. Cung cấp dinh dưỡng cân đối, đa dạng và tham gia cải tạo đất trồng", "B. Có giá thành cực rẻ và không bao giờ gây độc", "C. Cung cấp ngay lập tức lượng lớn đạm vô cơ tinh khiết", "D. Giúp cây hoàn toàn không cần nước"], correct: 0},
-            {q: "Độ ẩm đất quá thấp (hạn hán) sẽ gây tác động tiêu cực nào đến hệ rễ?", opts: ["A. Làm giảm khả năng hút nước và khoáng, ức chế sinh trưởng của rễ", "B. Kích thích rễ phát triển cực mạnh", "C. Giúp vi sinh vật cố định đạm hoạt động mạnh hơn", "D. Không có ảnh hưởng gì"], correct: 0},
-            {q: "Độ ẩm đất quá cao (ngập úng) gây ảnh hưởng xấu gì đối với cây trồng?", opts: ["A. Làm rễ thiếu oxygen, ứ đọng chất độc hại, gây thối rễ", "B. Giúp cây hấp thụ khoáng nhanh hơn", "C. Làm tăng lượng diệp lục ở lá", "D. Giúp lá thoát hơi nước tốt hơn"], correct: 0},
-            {q: "Trong các nguyên tắc bón phân, việc lựa chọn loại phân phù hợp với từng giai đoạn phát triển của cây ứng với nguyên tắc nào?", opts: ["A. Đúng loại phân", "B. Đúng liều lượng", "C. Đúng thời điểm", "D. Đúng phương pháp"], correct: 0},
-            {q: "Việc bón phân chia thành nhiều đợt bón lót và bón thúc tuân thủ theo nguyên tắc nào?", opts: ["A. Đúng thời điểm", "B. Đúng giá tiền", "C. Đúng loại", "D. Đúng thời tiết"], correct: 0},
-            {q: "Hiện tượng nấm rễ phổ biến ở hơn bao nhiêu phần trăm các loài thực vật trên cạn?", opts: ["A. Hơn 90%", "B. Khoảng 10%", "C. Khoảng 50%", "D. Đúng 100%"], correct: 0},
-            {q: "Nấm rễ phát triển đặc biệt mạnh ở các loài cây nào sau đây?", opts: ["A. Thông, vân sam, sồi", "B. Lúa nước và ngô", "C. Rau muống và rau cải", "D. Xương rồng và nha đam"], correct: 0},
-            {q: "Trong quan hệ cộng sinh nấm rễ, cây trồng cung cấp cho nấm chất gì?", opts: ["A. Chất hữu cơ", "B. Nước cất", "C. Ion muối khoáng vô cơ", "D. Khí oxygen"], correct: 0},
-            {q: "Mối quan hệ giữa lượng phân bón và năng suất cây trồng có dạng đồ thị như thế nào?", opts: ["A. Hình chuông (tăng đến lượng tối ưu thì đạt năng suất cao nhất, vượt quá sẽ giảm và gây độc)", "B. Đường thẳng tăng liên tục vô hạn", "C. Đường thẳng nằm ngang", "D. Đường parabol úp ngược không có đỉnh"], correct: 0},
-            {q: "Khi bón phân ở lượng thiếu, năng suất cây trồng sẽ ra sao?", opts: ["A. Thấp do cây không đủ dinh dưỡng", "B. Đạt mức tối ưu", "C. Gây độc chết cây", "D. Không thay đổi"], correct: 0},
-            {q: "Lượng dư thừa phân bón trong đất ngoài việc gây độc cho cây còn gây ra hệ luỵ gì cho môi trường?", opts: ["A. Gây ô nhiễm đất và nguồn nước ngầm", "B. Làm sạch hoàn toàn không khí", "C. Tăng lượng sinh vật có ích", "D. Làm đất tơi xốp vĩnh viễn"], correct: 0},
-            {q: "Trong các phương pháp bón phân cho cây mía trồng thâm canh trên đất cát pha, phương pháp bón lót thường là gì?", opts: ["A. Trộn đều phân vào đất", "B. Phun trực tiếp lên lá", "C. Tưới tràn trên bề mặt", "D. Bón qua hệ thống khí khổng"], correct: 0},
-            {q: "Phương pháp bón thúc phân cho cây trồng thường áp dụng cách nào?", opts: ["A. Bón theo hốc hoặc theo hàng", "B. Trộn sâu dưới mạch nước ngầm", "C. Phơi khô phân ngoài nắng", "D. Phun sương toàn bộ thân lá"], correct: 0},
-            {q: "Khoảng bao nhiêu phần trăm lượng nitrogen trong không khí dưới dạng tự do (N2) mà thực vật không thể trực tiếp hấp thụ được nếu không qua cố định đạm?", opts: ["A. Phần lớn (gần như toàn bộ nitrogen khí quyển)", "B. Chỉ chiếm 10%", "C. Chiếm 50%", "D. Không đáng kể"], correct: 0},
-            {q: "Quá trình chuyển hóa nitrogen hữu cơ (xác sinh vật) thành NH4+ trong đất nhờ vi sinh vật gọi là gì?", opts: ["A. Quá trình ammon hoá", "B. Quá trình khử nitrate", "C. Quá trình quang hợp", "D. Quá trình nitrat hoá"], correct: 0},
-            {q: "Vai trò của ánh sáng đối với quá trình hấp thụ khoáng của cây là gì?", opts: ["A. Cung cấp năng lượng và sản phẩm quang hợp cho hô hấp của rễ, từ đó thúc đẩy hấp thụ khoáng chủ động", "B. Làm bay hơi trực tiếp chất khoáng", "C. Làm đóng kín mạch gỗ", "D. Tiêu diệt vi sinh vật vùng rễ"], correct: 0},
-            {q: "Hiện tượng rỉ nhựa ở thân cây thể hiện rõ nhất vào điều kiện môi trường như thế nào?", opts: ["A. Độ ẩm không khí cao, quá trình thoát hơi nước bị ngưng trệ nhưng áp suất rễ vẫn hoạt động mạnh", "B. Trưa hè nắng gắt khô hanh", "C. Khi cây bị thiếu nước trầm trọng", "D. Khi nhiệt độ xuống dưới 0 độ C"], correct: 0},
-            {q: "Trong quá trình đồng hoá ammonium, việc kết hợp NH4+ với dicarboxylic acid nhằm tạo ra chất gì?", opts: ["A. Amide (như glutamin)", "B. Tinh bột", "C. Cellulose", "D. Lipid"], correct: 0},
-            {q: "Ý nghĩa thực tiễn của việc hiểu rõ các nhân tố ngoại cảnh ảnh hưởng đến trao đổi nước và khoáng là gì?", opts: ["A. Giúp điều khiển các yếu tố ngoại cảnh và chế độ bón phân, tưới nước hợp lí để nâng cao năng suất cây trồng", "B. Giúp cây tự sinh trưởng không cần chăm sóc", "C. Làm tăng giá thành phân bón", "D. Giảm số lượng giống cây trồng"], correct: 0},
-            {q: "Khi bón phân đạm cho cây lúa hoặc ngô, nếu bón quá nhiều vào giai đoạn chuẩn bị thu hoạch sẽ dẫn đến hiện tượng gì?", opts: ["A. Cây dễ bị lốp đổ, hạt chậm chắc và giảm chất lượng nông sản", "B. Cây phát triển hạt cực nhanh", "C. Rễ cây cắm sâu hơn", "D. Không có hiện tượng gì"], correct: 0},
-            {q: "Sự khác biệt cơ bản giữa phân vô cơ và phân hữu cơ đối với cây trồng là gì?", opts: ["A. Phân vô cơ cung cấp ion khoáng dễ tiêu nhanh, phân hữu cơ cung cấp dinh dưỡng cân đối và cải tạo đất", "B. Phân vô cơ làm từ chất sống, phân hữu cơ làm từ kim loại", "C. Phân hữu cơ làm cây chết ngay lập tức", "D. Không có điểm gì khác nhau"], correct: 0},
-            {q: "Bộ phận nào của rễ chịu trách nhiệm chính trong việc neo giữ cây và vận chuyển nước lên thân?", opts: ["A. Miền trưởng thành và hệ thống mạch dẫn của rễ", "B. Miền chóp rễ", "C. Lông hút non", "D. Vùng sinh trưởng"], correct: 0},
-            {q: "Tổng số câu hỏi chuẩn hóa trong hệ thống ôn tập Sinh học 11 Bài 2 này là bao nhiêu?", opts: ["A. Đúng 150 câu hỏi (chia đều 3 đề, mỗi đề 50 câu)", "B. Chỉ có 50 câu", "C. 100 câu", "D. 200 câu"], correct: 0}
-        ];
-
-        const allQuizzes = [quiz1, quiz2, quiz3];
-
-        let currentQuizIndex = 0;
-        let currentQuestionIndex = 0;
-        let userAnswers = {}; 
-        let quizScores = JSON.parse(localStorage.getItem('bienSoan_GiaBaosScores_v3') || '{}');
-
-        function updateDashboardScores() {
-            for (let i = 0; i < 3; i++) {
-                const infoEl = document.getElementById(`scoreInfo${i}`);
-                if (quizScores[i] !== undefined) {
-                    infoEl.innerHTML = `Điểm cao nhất: <strong class="text-indigo-600">${quizScores[i]}/50</strong>`;
-                } else {
-                    infoEl.innerHTML = `Chưa làm bài`;
-                }
-            }
-        }
-
-        updateDashboardScores();
-
-        function showDashboard() {
-            document.getElementById('dashboardView').classList.remove('hidden');
-            document.getElementById('quizView').classList.add('hidden');
-            document.getElementById('resultView').classList.add('hidden');
-            document.getElementById('btnHome').classList.add('hidden');
-            updateDashboardScores();
-        }
-
-        function startQuiz(index) {
-            currentQuizIndex = index;
-            currentQuestionIndex = 0;
-            userAnswers = {};
-            const titles = [
-                "Đề Số 01: Vai Trò & Hấp Thụ Tại Rễ (50 Câu)",
-                "Đề Số 02: Mạch Gỗ, Mạch Rây & Thoát Hơi Nước (50 Câu)",
-                "Đề Số 03: Dinh Dưỡng Nitrogen & Thực Tiễn (50 Câu)"
-            ];
-            document.getElementById('quizTitleDisplay').innerText = titles[index];
+    <!-- MODAL ĐĂNG NHẬP -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-indigo-600"></i> Đăng Nhập Quản Trị / Cán Sự
+                </h3>
+                <button onclick="closeModal('loginModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Vui lòng nhập mật khẩu tương ứng với tài khoản của bạn.</p>
             
-            document.getElementById('dashboardView').classList.add('hidden');
-            document.getElementById('quizView').classList.remove('hidden');
-            document.getElementById('resultView').classList.add('hidden');
-            document.getElementById('btnHome').classList.remove('hidden');
-
-            renderQuestion();
-        }
-
-        function renderQuestion() {
-            const currentList = allQuizzes[currentQuizIndex];
-            const q = currentList[currentQuestionIndex];
-            
-            document.getElementById('questionText').innerText = `${currentQuestionIndex + 1}. ${q.q}`;
-            document.getElementById('progressText').innerText = `Câu ${currentQuestionIndex + 1} / 50`;
-            
-            const progressPercent = ((currentQuestionIndex + 1) / 50) * 100;
-            document.getElementById('progressBar').style.width = `${progressPercent}%`;
-
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
-
-            q.opts.forEach((opt, idx) => {
-                const isSelected = userAnswers[currentQuestionIndex] === idx;
-                const btnClass = isSelected 
-                    ? 'border-indigo-600 bg-indigo-50 text-indigo-900 font-medium' 
-                    : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700';
-
-                const html = `
-                    <button onclick="selectOption(${idx})" class="w-full text-left p-4 rounded-xl border-2 transition flex items-center justify-between cursor-pointer ${btnClass}">
-                        <span>${opt}</span>
-                        <span class="w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300'}">
-                            ${isSelected ? '✓' : ''}
-                        </span>
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Mật khẩu truy cập</label>
+                <div class="relative">
+                    <input type="password" id="passwordInput" placeholder="Nhập mật khẩu..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2.5 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-3 text-slate-400 hover:text-indigo-600">
+                        <i class="fa-solid fa-eye" id="eyeIcon"></i>
                     </button>
-                `;
-                optionsContainer.innerHTML += html;
-            });
+                </div>
+                <p id="loginError" class="text-xs text-rose-600 mt-1.5 hidden font-medium"></p>
+            </div>
 
-            document.getElementById('btnPrev').style.visibility = currentQuestionIndex === 0 ? 'hidden' : 'visible';
-            document.getElementById('btnNext').innerText = currentQuestionIndex === 49 ? 'Nộp Bài' : 'Câu tiếp theo';
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('loginModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Hủy</button>
+                <button onclick="verifyLogin()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition shadow">Xác Nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SƠ ĐỒ BÀN HỌC -->
+    <div id="deskModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                <div>
+                    <h3 id="deskModalTitle" class="text-base font-bold text-slate-800">Chỉnh Sửa Bàn Học</h3>
+                    <p class="text-xs text-slate-500">Cập nhật tên học sinh 3 vị trí ngồi</p>
+                </div>
+                <button onclick="closeModal('deskModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <input type="hidden" id="editingDeskId">
+
+            <div class="space-y-3 mb-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Vị Trí 1 (Trái)</label>
+                    <input type="text" id="seat1Input" placeholder="Tên học sinh..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Vị Trí 2 (Giữa)</label>
+                    <input type="text" id="seat2Input" placeholder="Tên học sinh..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Vị Trí 3 (Phải)</label>
+                    <input type="text" id="seat3Input" placeholder="Tên học sinh..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('deskModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Hủy</button>
+                <button onclick="saveDeskChanges()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition shadow">Cập Nhật Sơ Đồ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL THÔNG BÁO -->
+    <div id="noticeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="noticeModalTitle" class="text-base font-bold text-slate-800">Tạo Thông Báo Mới</h3>
+                <button onclick="closeModal('noticeModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <input type="hidden" id="noticeIdInput">
+
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Loại Thông Báo</label>
+                    <select id="noticeTypeInput" class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="urgent">🔴 Khẩn Cấp</option>
+                        <option value="study">📘 Học Tập</option>
+                        <option value="general">🟢 Thông Báo Chung</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tiêu Đề Thông Báo</label>
+                    <input type="text" id="noticeTitleInput" placeholder="Nhập tiêu đề..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Hạn Nộp / Thời Hạn (Tự nhập)</label>
+                    <input type="text" id="noticeDeadlineInput" placeholder="Ví dụ: 20/10/2026 hoặc Trước 17h..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nội Dung Chi Tiết</label>
+                    <textarea id="noticeContentInput" rows="3" placeholder="Nhập nội dung thông báo..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('noticeModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Hủy</button>
+                <button onclick="saveNotice()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition shadow">Lưu Thông Báo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SỔ KỶ LUẬT -->
+    <div id="disciplineModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="disciplineModalTitle" class="text-base font-bold text-slate-800">Ghi Lỗi Vi Phạm Nề Nếp</h3>
+                <button onclick="closeModal('disciplineModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <input type="hidden" id="editingViolationId">
+
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Họ Tên Học Sinh (Khớp chính xác trong sơ đồ)</label>
+                    <input type="text" id="studentNameInput" placeholder="Nhập chính xác tên học sinh..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <p class="text-[11px] text-amber-600 mt-1">⚠️ Tên phải khớp từng chữ với học sinh có trên sơ đồ lớp.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nội Dung Vi Phạm</label>
+                    <input type="text" id="violationDetailInput" placeholder="Ví dụ: Đi học muộn 15 phút, ăn vặt..." class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('disciplineModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">Hủy</button>
+                <button onclick="saveViolation()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition shadow">Lưu Lỗi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC VỚI ĐỒNG BỘ THỜI GIAN THỰC -->
+    <script>
+        const PASS_TEACHER = "PCT2026@";
+        const PASS_MONITOR = atob("TE9QVFJVT05HQDEyMw=="); // LOPTRUONG@123
+        const PASS_VICE_MONITOR = atob("TE9QUEhPQDEyMw=="); // LOPPHO@123
+
+        let currentRole = 'student';
+
+        // --- HỆ THỐNG ĐỒNG BỘ THỜI GIAN THỰC (REAL-TIME SYNC) ---
+        const syncChannel = new BroadcastChannel('classroom_sync_channel');
+
+        function loadData(key, defaultVal) {
+            let data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : defaultVal;
         }
 
-        function selectOption(optionIndex) {
-            userAnswers[currentQuestionIndex] = optionIndex;
-            renderQuestion();
+        function saveDataAndBroadcast(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+            // Gửi tín hiệu đồng bộ sang các tab và thiết bị khác qua BroadcastChannel
+            syncChannel.postMessage({ type: 'SYNC_UPDATE', key: key });
         }
 
-        function prevQuestion() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                renderQuestion();
+        // Lắng nghe thay đổi dữ liệu từ tab khác hoặc thiết bị khác
+        syncChannel.onmessage = function(event) {
+            if (event.data && event.data.type === 'SYNC_UPDATE') {
+                refreshAllViews();
             }
+        };
+
+        // Lắng nghe sự kiện storage (đồng bộ đa tab cùng trình duyệt)
+        window.addEventListener('storage', function(e) {
+            refreshAllViews();
+        });
+
+        function refreshAllViews() {
+            notices = loadData('app_notices', defaultNotices);
+            violations = loadData('app_violations', defaultViolations);
+            desks = loadData('app_desks', generateDefaultDesks());
+            renderNotices();
+            renderDesks();
+            renderViolations();
         }
 
-        function nextQuestion() {
-            if (currentQuestionIndex < 49) {
-                currentQuestionIndex++;
-                renderQuestion();
+        const defaultNotices = [
+            { id: 1, author: 'teacher', authorTitle: 'Giáo Viên Chủ Nhiệm', type: 'urgent', title: 'Nộp Tiền Quỹ Lớp Học Kỳ I', deadline: '20/10/2026', content: 'Yêu cầu tất cả học sinh hoàn thành nộp quỹ lớp 300.000đ cho lớp trưởng.', date: '13/10/2026 - 08:30' },
+            { id: 2, author: 'monitor', authorTitle: 'Lớp Trưởng', type: 'study', title: 'Lịch Ôn Tập Giữa Kỳ', deadline: '25/10/2026', content: 'Nhắc các bạn mang đầy đủ vở bài tập môn Toán và Văn vào ngày mai.', date: '12/10/2026 - 14:15' }
+        ];
+
+        const defaultViolations = [
+            { id: 1, name: 'Học sinh 1A', content: 'Ăn vặt trong giờ học', date: '12/10/2026' },
+            { id: 2, name: 'Học sinh 2A', content: 'Đi học muộn 10 phút', date: '11/10/2026' }
+        ];
+
+        let notices = loadData('app_notices', defaultNotices);
+        let violations = loadData('app_violations', defaultViolations);
+        let desks = loadData('app_desks', generateDefaultDesks());
+
+        function generateDefaultDesks() {
+            let list = [];
+            for(let i = 1; i <= 18; i++) {
+                let group = i <= 6 ? 1 : (i <= 12 ? 2 : 3);
+                list.push({
+                    id: i,
+                    group: group,
+                    seat1: `Học sinh ${i}A`,
+                    seat2: `Học sinh ${i}B`,
+                    seat3: `Học sinh ${i}C`
+                });
+            }
+            return list;
+        }
+
+        window.onload = function() {
+            refreshAllViews();
+            updateUIRole();
+            triggerDeviceAlert();
+        };
+
+        function triggerDeviceAlert() {
+            if (navigator.vibrate) {
+                try { navigator.vibrate([400, 200, 400, 200]); } catch(e) {}
+            }
+            let banner = document.getElementById('alertBanner');
+            banner.classList.remove('hidden');
+            banner.classList.add('alert-vibrate');
+            setTimeout(() => {
+                banner.classList.remove('alert-vibrate');
+                banner.classList.add('hidden');
+            }, 2000);
+        }
+
+        // --- AUTHENTICATION ---
+        function openLoginModal() {
+            if(currentRole !== 'student') {
+                currentRole = 'student';
+                updateUIRole();
+                alert("Đã đăng xuất tài khoản quản trị/cán sự!");
             } else {
-                submitQuiz();
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('loginError').classList.add('hidden');
+                document.getElementById('loginModal').classList.remove('hidden');
             }
         }
 
-        function submitQuiz() {
-            const currentList = allQuizzes[currentQuizIndex];
-            let score = 0;
-            currentList.forEach((q, idx) => {
-                if (userAnswers[idx] === q.correct) {
-                    score++;
+        function verifyLogin() {
+            let pwd = document.getElementById('passwordInput').value;
+            if(pwd === PASS_TEACHER) {
+                currentRole = 'teacher';
+                closeModal('loginModal');
+                updateUIRole();
+                alert("Đăng nhập Giáo Viên thành công!");
+            } else if(pwd === PASS_MONITOR) {
+                currentRole = 'monitor';
+                closeModal('loginModal');
+                updateUIRole();
+                alert("Đăng nhập Lớp Trưởng thành công!");
+            } else if(pwd === PASS_VICE_MONITOR) {
+                currentRole = 'vice_monitor';
+                closeModal('loginModal');
+                updateUIRole();
+                alert("Đăng nhập Lớp Phó thành công!");
+            } else {
+                let err = document.getElementById('loginError');
+                err.innerText = "Mật khẩu không chính xác! Vui lòng thử lại.";
+                err.classList.remove('hidden');
+            }
+        }
+
+        function togglePasswordVisibility() {
+            let input = document.getElementById('passwordInput');
+            let icon = document.getElementById('eyeIcon');
+            if(input.type === "password") {
+                input.type = "text";
+                icon.className = "fa-solid fa-eye-slash";
+            } else {
+                input.type = "password";
+                icon.className = "fa-solid fa-eye";
+            }
+        }
+
+        function updateUIRole() {
+            let badge = document.getElementById('roleBadge');
+            let authBtnText = document.getElementById('authBtnText');
+            let authIcon = document.getElementById('authIcon');
+            let violationSec = document.getElementById('violationSection');
+            let addNoticeBtn = document.getElementById('addNoticeBtn');
+
+            if(currentRole === 'teacher') {
+                badge.innerHTML = `<i class="fa-solid fa-user-check text-emerald-400"></i> Giáo Viên (Admin)`;
+                authBtnText.innerText = "Đăng Xuất";
+                authIcon.className = "fa-solid fa-right-from-bracket";
+                violationSec.classList.remove('hidden');
+                addNoticeBtn.classList.remove('hidden');
+            } else if(currentRole === 'monitor') {
+                badge.innerHTML = `<i class="fa-solid fa-user-tie text-amber-300"></i> Lớp Trưởng`;
+                authBtnText.innerText = "Đăng Xuất";
+                authIcon.className = "fa-solid fa-right-from-bracket";
+                violationSec.classList.remove('hidden');
+                addNoticeBtn.classList.remove('hidden');
+            } else if(currentRole === 'vice_monitor') {
+                badge.innerHTML = `<i class="fa-solid fa-user-tie text-amber-300"></i> Lớp Phó`;
+                authBtnText.innerText = "Đăng Xuất";
+                authIcon.className = "fa-solid fa-right-from-bracket";
+                violationSec.classList.remove('hidden');
+                addNoticeBtn.classList.remove('hidden');
+            } else {
+                badge.innerHTML = `<i class="fa-solid fa-user-graduate text-amber-400"></i> Học sinh (Chỉ xem)`;
+                authBtnText.innerText = "Đăng Nhập";
+                authIcon.className = "fa-solid fa-key";
+                violationSec.classList.add('hidden');
+                addNoticeBtn.classList.add('hidden');
+            }
+
+            refreshAllViews();
+        }
+
+        function isValidStudentName(name) {
+            let clean = name.trim();
+            for(let d of desks) {
+                if(d.seat1.trim() === clean || d.seat2.trim() === clean || d.seat3.trim() === clean) {
+                    return true;
                 }
-            });
-
-            if (quizScores[currentQuizIndex] === undefined || score > quizScores[currentQuizIndex]) {
-                quizScores[currentQuizIndex] = score;
-                localStorage.setItem('bienSoan_GiaBaosScores_v3', JSON.stringify(quizScores));
             }
-
-            document.getElementById('quizView').classList.add('hidden');
-            document.getElementById('resultView').classList.remove('hidden');
-            
-            document.getElementById('scoreCircle').innerText = `${score}/50`;
-            document.getElementById('resultMessage').innerText = `Bạn đã hoàn thành xuất sắc bài thi và đạt điểm số ${score}/50. Hệ thống đã lưu điểm cao nhất của bạn!`;
+            return false;
         }
 
-        function restartQuiz() {
-            userAnswers = {};
-            currentQuestionIndex = 0;
-            document.getElementById('resultView').classList.add('hidden');
-            document.getElementById('quizView').classList.remove('hidden');
-            renderQuestion();
+        // --- RENDER FUNCTIONS ---
+        function renderNotices() {
+            let container = document.getElementById('noticeContainer');
+            container.innerHTML = '';
+
+            if(notices.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">Chưa có thông báo nào được đăng.</p>`;
+                return;
+            }
+
+            notices.forEach(n => {
+                let badgeClass = n.type === 'urgent' ? 'bg-rose-100 text-rose-700 border-rose-200' : 
+                                (n.type === 'study' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200');
+                let badgeText = n.type === 'urgent' ? '🔴 Khẩn Cấp' : (n.type === 'study' ? '📘 Học Tập' : '🟢 Thông Báo Chung');
+
+                let canEdit = (currentRole === 'teacher') || (currentRole === 'monitor' && n.author !== 'teacher') || (currentRole === 'vice_monitor' && n.author !== 'teacher');
+
+                let toolsHtml = (currentRole !== 'student' && canEdit) ? `
+                    <div class="flex gap-1">
+                        <button onclick="editNotice(${n.id})" class="text-xs text-indigo-600 hover:text-indigo-800 p-1"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteNotice(${n.id})" class="text-xs text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                ` : '';
+
+                let deadlineHtml = n.deadline ? `<span class="bg-amber-50 text-amber-800 border border-amber-200 text-[11px] px-2.5 py-0.5 rounded-full font-semibold"><i class="fa-regular fa-calendar-days"></i> Hạn nộp: ${n.deadline}</span>` : '';
+
+                let isTeacherNotice = (n.author === 'teacher');
+                let cardStyle = isTeacherNotice 
+                    ? 'bg-amber-50/80 border-2 border-amber-500 shadow-md ring-1 ring-amber-300' 
+                    : 'bg-slate-50 border border-slate-200 shadow-sm';
+                
+                let authorBadge = isTeacherNotice
+                    ? `<span class="bg-amber-600 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow-sm"><i class="fa-solid fa-star"></i> Giáo Viên Chủ Nhiệm</span>`
+                    : `<span class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">${n.authorTitle || 'Cán Sự Lớp'}</span>`;
+
+                container.innerHTML += `
+                    <div class="${cardStyle} rounded-xl p-4 transition">
+                        <div class="flex justify-between items-start gap-2 mb-2 flex-wrap">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                ${authorBadge}
+                                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeClass}">
+                                    ${badgeText}
+                                </span>
+                                ${deadlineHtml}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] text-slate-500 font-medium"><i class="fa-regular fa-clock"></i> ${n.date}</span>
+                                ${toolsHtml}
+                            </div>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-sm md:text-base mb-1 ${isTeacherNotice ? 'text-indigo-950 font-black text-base' : ''}">${n.title}</h3>
+                        <p class="text-xs md:text-sm text-slate-700 leading-relaxed ${isTeacherNotice ? 'font-medium' : ''}">${n.content}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function renderDesks() {
+            let g1 = document.getElementById('group1Container');
+            let g2 = document.getElementById('group2Container');
+            let g3 = document.getElementById('group3Container');
+
+            g1.innerHTML = ''; g2.innerHTML = ''; g3.innerHTML = '';
+
+            desks.forEach(d => {
+                let editIcon = (currentRole !== 'student') ? `<i class="fa-solid fa-pen-to-square text-[10px] text-indigo-600"></i>` : '';
+                let deskHtml = `
+                    <div onclick="openDeskModal(${d.id})" class="desk-card bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:border-indigo-400">
+                        <div class="flex justify-between items-center mb-1 pb-1 border-b border-slate-100">
+                            <span class="font-bold text-[11px] text-indigo-900">Bàn ${d.id}</span>
+                            ${editIcon}
+                        </div>
+                        <div class="grid grid-cols-3 gap-1 text-center text-[10px]">
+                            <div class="bg-slate-100 p-1 rounded font-medium text-slate-700 truncate" title="${d.seat1}">${d.seat1}</div>
+                            <div class="bg-slate-100 p-1 rounded font-medium text-slate-700 truncate" title="${d.seat2}">${d.seat2}</div>
+                            <div class="bg-slate-100 p-1 rounded font-medium text-slate-700 truncate" title="${d.seat3}">${d.seat3}</div>
+                        </div>
+                    </div>
+                `;
+
+                if(d.group === 1) g1.innerHTML += deskHtml;
+                else if(d.group === 2) g2.innerHTML += deskHtml;
+                else g3.innerHTML += deskHtml;
+            });
+        }
+
+        function renderViolations() {
+            let table = document.getElementById('violationTable');
+            let statsCard = document.getElementById('violationStatsCard');
+            table.innerHTML = '';
+
+            if(violations.length > 0) {
+                let countMap = {};
+                violations.forEach(v => {
+                    let name = v.name.trim();
+                    countMap[name] = (countMap[name] || 0) + 1;
+                });
+
+                let topStudent = Object.keys(countMap).reduce((a, b) => countMap[a] > countMap[b] ? a : b);
+                let topCount = countMap[topStudent];
+
+                statsCard.innerHTML = `
+                    <div class="flex items-center gap-2 text-rose-800 font-bold">
+                        <i class="fa-solid fa-chart-pie text-base"></i>
+                        <span>Thống kê nề nếp:</span>
+                    </div>
+                    <div class="text-slate-700">
+                        Học sinh vi phạm nhiều nhất: <span class="font-bold text-rose-600 underline">${topStudent}</span> (${topCount} lần)
+                    </div>
+                `;
+                statsCard.classList.remove('hidden');
+            } else {
+                statsCard.innerHTML = `<span class="text-slate-400 italic">Chưa có thống kê vi phạm.</span>`;
+            }
+
+            if(violations.length === 0) {
+                table.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-xs text-slate-400 italic">Không có ghi nhận vi phạm kỷ luật.</td></tr>`;
+                return;
+            }
+
+            violations.forEach(v => {
+                let actionButtons = (currentRole !== 'student') ? `
+                    <div class="flex justify-end gap-1.5">
+                        <button onclick="editViolation(${v.id})" class="text-xs text-indigo-600 hover:text-indigo-800 p-1 bg-indigo-50 rounded" title="Tinh chỉnh lỗi"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteViolation(${v.id})" class="text-xs text-rose-600 hover:text-rose-800 p-1 bg-rose-50 rounded" title="Xóa lỗi"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                ` : `<span class="text-slate-400 text-xs italic">Chỉ xem</span>`;
+
+                table.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-semibold text-slate-800">${v.name}</td>
+                        <td class="p-3 text-rose-600 font-medium">${v.content}</td>
+                        <td class="p-3 text-xs text-slate-400">${v.date}</td>
+                        <td class="p-3 text-right">${actionButtons}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- DESK EDITING LOGIC ---
+        function openDeskModal(deskId) {
+            if(currentRole === 'student') {
+                alert("Học sinh chỉ có quyền xem sơ đồ lớp. Cán sự lớp hoặc Giáo viên mới có quyền chỉnh sửa!");
+                return;
+            }
+            let desk = desks.find(d => d.id === deskId);
+            if(!desk) return;
+
+            document.getElementById('editingDeskId').value = desk.id;
+            document.getElementById('deskModalTitle').innerText = `Chỉnh Sửa Bàn ${desk.id} (Tổ ${desk.group})`;
+            document.getElementById('seat1Input').value = desk.seat1;
+            document.getElementById('seat2Input').value = desk.seat2;
+            document.getElementById('seat3Input').value = desk.seat3;
+
+            document.getElementById('deskModal').classList.remove('hidden');
+        }
+
+        function saveDeskChanges() {
+            let id = parseInt(document.getElementById('editingDeskId').value);
+            let desk = desks.find(d => d.id === id);
+            if(desk) {
+                desk.seat1 = document.getElementById('seat1Input').value.trim() || 'Trống';
+                desk.seat2 = document.getElementById('seat2Input').value.trim() || 'Trống';
+                desk.seat3 = document.getElementById('seat3Input').value.trim() || 'Trống';
+
+                saveDataAndBroadcast('app_desks', desks);
+                closeModal('deskModal');
+            }
+        }
+
+        // --- NOTICE MANAGEMENT LOGIC ---
+        function openNoticeModal() {
+            if(currentRole === 'student') return;
+            document.getElementById('noticeIdInput').value = '';
+            document.getElementById('noticeModalTitle').innerText = "Tạo Thông Báo Mới";
+            document.getElementById('noticeTitleInput').value = '';
+            document.getElementById('noticeDeadlineInput').value = '';
+            document.getElementById('noticeContentInput').value = '';
+            document.getElementById('noticeModal').classList.remove('hidden');
+        }
+
+        function editNotice(id) {
+            let n = notices.find(x => x.id === id);
+            if(!n) return;
+
+            document.getElementById('noticeIdInput').value = n.id;
+            document.getElementById('noticeModalTitle').innerText = "Tinh Chỉnh Thông Báo";
+            document.getElementById('noticeTypeInput').value = n.type;
+            document.getElementById('noticeTitleInput').value = n.title;
+            document.getElementById('noticeDeadlineInput').value = n.deadline || '';
+            document.getElementById('noticeContentInput').value = n.content;
+            document.getElementById('noticeModal').classList.remove('hidden');
+        }
+
+        function saveNotice() {
+            let id = document.getElementById('noticeIdInput').value;
+            let type = document.getElementById('noticeTypeInput').value;
+            let title = document.getElementById('noticeTitleInput').value.trim();
+            let deadline = document.getElementById('noticeDeadlineInput').value.trim();
+            let content = document.getElementById('noticeContentInput').value.trim();
+
+            if(!title || !content) {
+                alert("Vui lòng điền tiêu đề và nội dung thông báo!");
+                return;
+            }
+
+            let now = new Date();
+            let dateStr = `${now.toLocaleDateString('vi-VN')} - ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            let authorKey = (currentRole === 'teacher') ? 'teacher' : (currentRole === 'monitor' ? 'monitor' : 'vice_monitor');
+            let authorTitleStr = (currentRole === 'teacher') ? 'Giáo Viên Chủ Nhiệm' : (currentRole === 'monitor' ? 'Lớp Trưởng' : 'Lớp Phó');
+
+            if(id) {
+                let n = notices.find(x => x.id == id);
+                if(n) {
+                    n.type = type;
+                    n.title = title;
+                    n.deadline = deadline;
+                    n.content = content;
+                }
+            } else {
+                notices.unshift({
+                    id: Date.now(),
+                    author: authorKey,
+                    authorTitle: authorTitleStr,
+                    type: type,
+                    title: title,
+                    deadline: deadline,
+                    content: content,
+                    date: dateStr
+                });
+            }
+
+            saveDataAndBroadcast('app_notices', notices);
+            closeModal('noticeModal');
+        }
+
+        function deleteNotice(id) {
+            if(confirm("Bạn có chắc chắn muốn xóa thông báo này?")) {
+                notices = notices.filter(x => x.id !== id);
+                saveDataAndBroadcast('app_notices', notices);
+            }
+        }
+
+        // --- DISCIPLINE LOGIC ---
+        function openDisciplineModal() {
+            if(currentRole === 'student') {
+                alert("Bạn không có quyền truy cập sổ ghi lỗi!");
+                return;
+            }
+            document.getElementById('editingViolationId').value = '';
+            document.getElementById('disciplineModalTitle').innerText = "Ghi Lỗi Vi Phạm Nề Nếp";
+            document.getElementById('studentNameInput').value = '';
+            document.getElementById('violationDetailInput').value = '';
+            document.getElementById('disciplineModal').classList.remove('hidden');
+        }
+
+        function editViolation(id) {
+            if(currentRole === 'student') return;
+            let v = violations.find(x => x.id === id);
+            if(!v) return;
+
+            document.getElementById('editingViolationId').value = v.id;
+            document.getElementById('disciplineModalTitle').innerText = "Tinh Chỉnh Lỗi Vi Phạm";
+            document.getElementById('studentNameInput').value = v.name;
+            document.getElementById('violationDetailInput').value = v.content;
+            document.getElementById('disciplineModal').classList.remove('hidden');
+        }
+
+        function saveViolation() {
+            let id = document.getElementById('editingViolationId').value;
+            let name = document.getElementById('studentNameInput').value.trim();
+            let detail = document.getElementById('violationDetailInput').value.trim();
+
+            if(!name || !detail) {
+                alert("Vui lòng nhập đầy đủ tên học sinh và lỗi vi phạm!");
+                return;
+            }
+
+            if(!isValidStudentName(name)) {
+                alert(`Lỗi: Tên "${name}" không tồn tại hoặc không khớp chính xác với bất kỳ học sinh nào trong sơ đồ lớp học!`);
+                return;
+            }
+
+            if(id) {
+                let v = violations.find(x => x.id == id);
+                if(v) {
+                    v.name = name;
+                    v.content = detail;
+                }
+            } else {
+                violations.unshift({
+                    id: Date.now(),
+                    name: name,
+                    content: detail,
+                    date: new Date().toLocaleDateString('vi-VN')
+                });
+            }
+
+            saveDataAndBroadcast('app_violations', violations);
+            closeModal('disciplineModal');
+            alert("Đã lưu bản ghi lỗi thành công!");
+        }
+
+        function deleteViolation(id) {
+            if(currentRole === 'student') {
+                alert("Bạn không có quyền xóa lỗi!");
+                return;
+            }
+            if(confirm("Bạn có chắc chắn muốn xóa bản ghi lỗi vi phạm này khỏi hệ thống?")) {
+                violations = violations.filter(v => v.id !== id);
+                saveDataAndBroadcast('app_violations', violations);
+            }
+        }
+
+        // --- AI CHATBOT GIỚI HẠN ĐÚNG 3 VIỆC ---
+        function quickAsk(question) {
+            document.getElementById('aiInput').value = question;
+            sendAiMessage();
+        }
+
+        function sendAiMessage() {
+            let input = document.getElementById('aiInput');
+            let query = input.value.trim();
+            if(!query) return;
+
+            let chatBox = document.getElementById('aiChatBox');
+
+            chatBox.innerHTML += `
+                <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none ml-auto max-w-[85%] text-xs shadow-sm">
+                    ${query}
+                </div>
+            `;
+
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            setTimeout(() => {
+                let reply = generateAiReply(query);
+                chatBox.innerHTML += `
+                    <div class="bg-indigo-100/70 text-indigo-950 p-3 rounded-2xl rounded-tl-none border border-indigo-200/50 max-w-[88%] text-xs leading-relaxed">
+                        🤖 ${reply}
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 400);
+        }
+
+        function generateAiReply(q) {
+            let lower = q.toLowerCase();
+
+            if(lower.includes('đóng quỹ') || lower.includes('khi nào đóng quỹ') || lower.includes('quỹ lớp')) {
+                let n = notices.find(x => x.title.toLowerCase().includes('quỹ') || x.content.toLowerCase().includes('quỹ'));
+                return n ? `Thông tin đóng quỹ: "${n.title}" (Hạn nộp: ${n.deadline || 'Chưa cập nhật'}) - ${n.content}` : "Hạn đóng quỹ lớp là trước ngày 20/10/2026 theo thông báo khẩn cấp.";
+            }
+
+            if(lower.includes('vi phạm') || lower.includes('nhiều nhất') || lower.includes('ai vi phạm')) {
+                if(violations.length === 0) return "Sổ kỷ luật hiện chưa ghi nhận trường hợp vi phạm nào.";
+                let countMap = {};
+                violations.forEach(v => {
+                    let name = v.name.trim();
+                    countMap[name] = (countMap[name] || 0) + 1;
+                });
+                let topStudent = Object.keys(countMap).reduce((a, b) => countMap[a] > countMap[b] ? a : b);
+                return `Học sinh vi phạm nhiều nhất trong sổ kỷ luật hiện tại là: **${topStudent}** với tổng số **${countMap[topStudent]} lần** vi phạm.`;
+            }
+
+            if(lower.includes('sơ đồ') || lower.includes('chỗ ngồi') || lower.includes('bàn')) {
+                return "Sơ đồ lớp học bao gồm 3 Tổ, mỗi tổ có 6 bàn dọc, mỗi bàn có 3 vị trí ngồi (tổng cộng 18 bàn). Bạn có thể xem chi tiết trực tiếp trên màn hình sơ đồ lớp.";
+            }
+
+            return "Xin lỗi, tôi chỉ là trợ lý giới hạn của lớp và chỉ được phép trả lời 3 câu hỏi: (1) Khi nào đóng quỹ, (2) Ai vi phạm nhiều nhất, và (3) Sơ đồ lớp như thế nào. Vui lòng hỏi lại một trong ba chủ đề trên nhé!";
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
         }
     </script>
 </body>
